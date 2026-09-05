@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>뽀로로 갤러리</title>
+<style>
+  :root {
+    --sky: #eaf6ff;
+    --blue: #2f9bdd;
+    --blue-dark: #1c78b3;
+    --yellow: #ffcc33;
+    --card-bg: #ffffff;
+    --text: #234;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif;
+    background: linear-gradient(180deg, var(--sky) 0%, #ffffff 260px);
+    color: var(--text);
+  }
+  header {
+    text-align: center;
+    padding: 40px 20px 20px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 2.4rem;
+    color: var(--blue-dark);
+    text-shadow: 2px 2px 0 var(--yellow);
+  }
+  header p {
+    margin-top: 8px;
+    color: #567;
+    font-size: 0.95rem;
+  }
+  .gallery {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 24px 60px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 22px;
+  }
+  .card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(30, 100, 150, 0.15);
+    border: 3px solid var(--blue);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 8px 20px rgba(30, 100, 150, 0.25);
+  }
+  .card .thumb-wrap {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .card .caption {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    color: #456;
+    text-align: center;
+  }
+  .card.broken .thumb-wrap {
+    color: #99a;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 10px;
+  }
+
+  /* Lightbox */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 30, 45, 0.85);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 30px;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img {
+    max-width: 90vw;
+    max-height: 80vh;
+    border-radius: 12px;
+    border: 4px solid var(--yellow);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  .lightbox .close-btn {
+    position: absolute;
+    top: 24px;
+    right: 32px;
+    font-size: 2rem;
+    color: #fff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .lightbox .lb-caption {
+    position: absolute;
+    bottom: 24px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #fff;
+    font-size: 0.9rem;
+  }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.75rem;
+    color: #789;
+  }
+  footer a { color: var(--blue-dark); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🐧 뽀로로 갤러리</h1>
+  <p>뽀로로와 친구들의 모습을 담은 사진 모음이에요. 사진을 클릭하면 크게 볼 수 있어요!</p>
+</header>
+
+<div class="gallery" id="gallery"></div>
+
+<div class="lightbox" id="lightbox">
+  <button class="close-btn" id="lbClose">&times;</button>
+  <img id="lbImg" src="" alt="">
+  <div class="lb-caption" id="lbCaption"></div>
+</div>
+
+<footer>
+  이미지 출처: <a href="https://commons.wikimedia.org/wiki/Category:Pororo_the_Little_Penguin" target="_blank" rel="noopener">Wikimedia Commons</a> ·
+  각 이미지는 원 저작자의 라이선스(CC BY / CC BY-SA 등)를 따릅니다.
+</footer>
+
+<script>
+  const images = [
+    {
+      src: "https://commons.wikimedia.org/wiki/Special:FilePath/K_Travel_Bus_09_(25414256793).jpg",
+      caption: "뽀로로 랩핑 버스 (K Travel Bus 09)"
+    },
+    {
+      src: "https://commons.wikimedia.org/wiki/Special:FilePath/K_Travel_Bus_10_(25950311861).jpg",
+      caption: "뽀로로 랩핑 버스 (K Travel Bus 10)"
+    },
+    {
+      src: "https://commons.wikimedia.org/wiki/Special:FilePath/K_Travel_Bus_11_(25924162232).jpg",
+      caption: "뽀로로 랩핑 버스 (K Travel Bus 11)"
+    },
+    {
+      src: "https://commons.wikimedia.org/wiki/Special:FilePath/K_Travel_Bus_16_(25414246803).jpg",
+      caption: "뽀로로 랩핑 버스 (K Travel Bus 16)"
+    },
+    {
+      src: "https://commons.wikimedia.org/wiki/Special:FilePath/Pororo_at_LG_Cinema_3D_World_Festival.jpg",
+      caption: "LG 시네마 3D 월드 페스티벌의 뽀로로"
+    },
+    {
+      src: "https://commons.wikimedia.org/wiki/Special:FilePath/Pororo_the_Little_Penguin_performance,_Nex,_Singapore_-_20131215.jpg",
+      caption: "싱가포르 넥스(Nex)에서의 뽀로로 공연"
+    },
+    {
+      src: "https://en.wikipedia.org/wiki/Special:FilePath/Pororo_the_Little_Penguin_Title_Card.png",
+      caption: "뽀로로 타이틀 카드"
+    }
+  ];
+
+  const gallery = document.getElementById("gallery");
+  const lightbox = document.getElementById("lightbox");
+  const lbImg = document.getElementById("lbImg");
+  const lbCaption = document.getElementById("lbCaption");
+
+  images.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const thumbWrap = document.createElement("div");
+    thumbWrap.className = "thumb-wrap";
+
+    const img = document.createElement("img");
+    img.src = item.src;
+    img.alt = item.caption;
+    img.loading = "lazy";
+    img.onerror = () => {
+      card.classList.add("broken");
+      thumbWrap.textContent = "이미지를 불러올 수 없어요 😢";
+      img.remove();
+    };
+
+    thumbWrap.appendChild(img);
+
+    const caption = document.createElement("div");
+    caption.className = "caption";
+    caption.textContent = item.caption;
+
+    card.appendChild(thumbWrap);
+    card.appendChild(caption);
+    card.addEventListener("click", () => {
+      if (card.classList.contains("broken")) return;
+      lbImg.src = item.src;
+      lbCaption.textContent = item.caption;
+      lightbox.classList.add("open");
+    });
+
+    gallery.appendChild(card);
+  });
+
+  document.getElementById("lbClose").addEventListener("click", () => {
+    lightbox.classList.remove("open");
+  });
+  lightbox.addEventListener("click", (e) => {
+    if (e.target === lightbox) lightbox.classList.remove("open");
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") lightbox.classList.remove("open");
+  });
+</script>
+
+</body>
+</html>
